@@ -11,7 +11,7 @@ using namespace std;
 		//12E3FBF4 coords to y teleport
 		//12E3FBF8 coords to z teleport
 DWORD GetProcId(const wchar_t* procName) {
-	DWORD procId = 0;
+	DWORD procId;
 	HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (hSnap != INVALID_HANDLE_VALUE) {
 		PROCESSENTRY32 procEntry;
