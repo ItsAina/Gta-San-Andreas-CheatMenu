@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <Windows.h>
 #include <vector>
@@ -8,8 +9,63 @@
 #include <thread>
 #include <ranges>
 #include <tuple>
+#include <algorithm> 
+#include <cctype>    
+#include <string>
 
 using namespace std;
+
+
+
+template<typename Iterator1, typename Iterator2>
+class ZipIterator {
+public:
+	using value_type = std::pair<typename std::iterator_traits<Iterator1>::value_type, typename std::iterator_traits<Iterator2>::value_type>;
+	using difference_type = typename std::iterator_traits<Iterator1>::difference_type;
+	using pointer = value_type*;
+	using reference = value_type&;
+	using iterator_category = std::forward_iterator_tag;
+
+	ZipIterator(Iterator1 iter1, Iterator2 iter2) : it1(iter1), it2(iter2) {}
+
+	value_type operator*() const {
+		return std::make_pair(*it1, *it2);
+	}
+
+	ZipIterator& operator++() {
+		++it1;
+		++it2;
+		return *this;
+	}
+
+	bool operator!=(const ZipIterator& other) const {
+		return it1 != other.it1 || it2 != other.it2;
+	}
+
+private:
+	Iterator1 it1;
+	Iterator2 it2;
+};
+
+template<typename Container1, typename Container2>
+class Zip {
+public:
+	Zip(Container1& c1, Container2& c2) : container1(c1), container2(c2) {}
+
+	auto begin() {
+		return ZipIterator<typename Container1::iterator, typename Container2::iterator>(container1.begin(), container2.begin());
+	}
+
+	auto end() {
+		return ZipIterator<typename Container1::iterator, typename Container2::iterator>(container1.end(), container2.end());
+	}
+
+private:
+	Container1& container1;
+	Container2& container2;
+};
+
+
 
 
 //class PlayerObject {
@@ -60,7 +116,7 @@ DWORD getpointeraddress(HANDLE phandle, DWORD PlayerObjectaddress, const vector<
 }
 
 
-void choosecheatmenumode(DWORD pid,HANDLE GetHandle) {
+void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 	vector<DWORD> offsets = { 0x540,0xB4,0x0,0x4,0xB0,0x1CC };
 	vector<DWORD> locationoffsets = { 0x30,0x34,0x38 };
 	//float health = *(float*)(0xB6F5F0 + 0x540);
@@ -69,33 +125,34 @@ void choosecheatmenumode(DWORD pid,HANDLE GetHandle) {
 	DWORD StaminaAddr = 0xB7BA58;
 	DWORD MuscleAddr = 0xB7BA5C;
 	DWORD LungCapacityAddr = 0xB7F43C;
-	DWORD MaxHealthAddr = 0xB7A60;
-	DWORD RespectAddr = 
+	DWORD MaxHealthAddr = 0xB7BA60;
+	DWORD RespectAddr = 0xB7BB00;
 	DWORD Inventory = 0xB7F43C;
 	DWORD TimeControl = 0xB7F4D0;
 	DWORD BaseAddr = getbasemoduleaddress(L"gta_sa.exe", pid);
 	DWORD PlayerObj = 0x771A38;
-	DWORD xaddr = 0x771C70;
-	DWORD yaddr = 0x771A38;
-	DWORD zaddr = 0x771C70;
-	DWORD skillpistol = 0xB7BB14;
-	DWORD skillsilenecedpistol = 0xB7BB18;
-	DWORD skillDeagle = 0xB7BB1C;
-	DWORD skillshotgun = 0xB7BB20;
-	DWORD skillsawn = 0xB7BB24;
-	DWORD skillcombatshotgun = 0xB7BB28;
-	DWORD skillmachinepistol = 0xB7BB2C;
-	DWORD skillsmg = 0xB7BB30;
-	DWORD skillak47 = 0xB7BB34;
-	DWORD skillm4 = 0xB7BB38;
-	DWORD SpawnRom = 0xB7B6C4;
+	DWORD xaddrstatic = 0x771C70;
+	DWORD yaddrstatic = 0x771A38;
+	DWORD zaddrstatic = 0x771C70;
+	DWORD skillpistoladdr = 0xB7BB14;
+	DWORD skillsilenecedpistoladdr = 0xB7BB18;
+	DWORD skillDeagleaddr = 0xB7BB1C;
+	DWORD skillshotgunaddr = 0xB7BB20;
+	DWORD skillsawnaddr = 0xB7BB24;
+	DWORD skillcombatshotgunaddr = 0xB7BB28;
+	DWORD skillmachinepistoladdr = 0xB7BB2C;
+	DWORD skillsmgaddr = 0xB7BB30;
+	DWORD skillak47addr = 0xB7BB34;
+	DWORD skillm4addr = 0xB7BB38;
+	DWORD infiniteammoaddr = 0x96B7F8;
+	DWORD SpawnRomaddr = 0xB7B6C4;
 
 
 
 	void* PlayerObject = (void*)(BaseAddr + PlayerObj);
-	void* xobj = (void*)(BaseAddr + xaddr);
-	void* yobj = (void*)(BaseAddr + yaddr);
-	void* zobj = (void*)(BaseAddr + zaddr);
+	void* xobj = (void*)(BaseAddr + xaddrstatic);
+	void* yobj = (void*)(BaseAddr + yaddrstatic);
+	void* zobj = (void*)(BaseAddr + zaddrstatic);
 	uintptr_t Playerptr;
 	uintptr_t xptr;
 	uintptr_t yptr;
@@ -106,43 +163,69 @@ void choosecheatmenumode(DWORD pid,HANDLE GetHandle) {
 	ReadProcessMemory(GetHandle, yobj, &zptr, sizeof(zptr), 0);
 	ReadProcessMemory(GetHandle, zobj, &yptr, sizeof(yptr), 0);
 
-	
+
 	//DWORD Offset = getpointeraddress(getwindowtitle,PlayerObjectAddr,offsets);
 	bool godmode = false;
+	bool unbreakableshield = false;
+	bool infiniteammo = false;
 	int money;
 	float health, armor;
 	float maxhealth;
-	float fatness,stamina,muscle,lung,respect;
+	float fatness, stamina, muscle, lung, respect;
 	float x, y, z;
-	cout << "For toggle on godmode press: F2\t For changing money press: F4\nFor changing xyz position press: F5\t For infinity armor press: F6\nFor altering stats press: F7\t For toggle on aimbot press: F8\n ";
+	cout << "For toggle on godmode, press: F2\t For toggle on infinite ammo, press: F4\t For changing xyz position, press: F5\t For infinity armor, press: F6\nFor altering stats, press: F7\t";
 	while (true) {
 		if (GetAsyncKeyState(VK_F2)) {
 			godmode = not godmode;
-			this_thread::sleep_for(chrono::milliseconds(500));
+			this_thread::sleep_for(chrono::milliseconds(200));
 			//cout << godmode << endl;
 			if (godmode) {
 				cout << "God mode is toggled on" << endl;
 				health = std::numeric_limits<double>::infinity();
 				WriteProcessMemory(GetHandle, LPVOID(Playerptr + 0x540), &health, sizeof(health), 0);
-				cout << health << endl;
-	
-				
+
+
 			}
 
 			else {
 				cout << "God mode is toggled off" << endl;
-				health = 100;
-				WriteProcessMemory(GetHandle, LPVOID(Playerptr + 0x540), &health, sizeof(health), 0);
+			
+				float newhealth = 100;
+				WriteProcessMemory(GetHandle, LPVOID(Playerptr + 0x540), &newhealth, sizeof(newhealth), 0);
 
 
 			}
 		}
-	
+
+		if (GetAsyncKeyState(VK_F4)) {
+			infiniteammo = not infiniteammo;
+			this_thread::sleep_for(chrono::milliseconds(200));
+			if (infiniteammo) {
+				cout << "Infinity ammo is on" << endl;
+				int ammoinfinity = 1;
+				WriteProcessMemory(GetHandle, LPVOID(infiniteammoaddr), &ammoinfinity, sizeof(ammoinfinity), 0);
+
+
+			}
+
+			else {
+				cout << "Infinity ammo is off" << endl;
+				int ammoinfinity = 0;
+				WriteProcessMemory(GetHandle, LPVOID(infiniteammoaddr), &ammoinfinity, sizeof(ammoinfinity), 0);
+
+
+			}
+		
+
+
+
+		}
+
 		if (GetAsyncKeyState(VK_F5)) {
 			ReadProcessMemory(GetHandle, LPCVOID(xptr + 0x30), &x, sizeof(x), 0);
 			ReadProcessMemory(GetHandle, LPCVOID(yptr + 0x34), &y, sizeof(y), 0);
 			ReadProcessMemory(GetHandle, LPCVOID(zptr + 0x38), &z, sizeof(z), 0);
-			cout <<"Your current position of:\t" << "x:" << x << "\t" << "y:" << y << "\t" << "z:" << z << "\n";
+			cout << "Your current position of:\t" << "x:" << x << "\t" << "y:" << y << "\t" << "z:" << z << "\n";
 			cout << "Add coordinates for x" << endl;
 			cin >> x;
 			cout << "Add coordinates for y" << endl;
@@ -154,45 +237,90 @@ void choosecheatmenumode(DWORD pid,HANDLE GetHandle) {
 			WriteProcessMemory(GetHandle, LPVOID(xptr + 0x30), &x, sizeof(x), 0);
 			WriteProcessMemory(GetHandle, LPVOID(yptr + 0x34), &y, sizeof(y), 0);
 			WriteProcessMemory(GetHandle, LPVOID(zptr + 0x38), &z, sizeof(z), 0);
-	/*		int counter = 0;
-			for (float coordinate : coordinates) {
-				WriteProcessMemory(GetHandle, LPVOID(locationpointer[counter] + locationoffsets[counter]), &coordinate, sizeof(coordinate), 0);
-				counter += 1;
+			/*		int counter = 0;
+					for (float coordinate : coordinates) {
+						WriteProcessMemory(GetHandle, LPVOID(locationpointer[counter] + locationoffsets[counter]), &coordinate, sizeof(coordinate), 0);
+						counter += 1;
 
-			}*/
+					}*/
+
+		}
+
+		if (GetAsyncKeyState(VK_F6)) {
+			unbreakableshield = not unbreakableshield;
+			this_thread::sleep_for(chrono::milliseconds(500));
+			//cout << godmode << endl;
+			if (unbreakableshield) {
+				cout << "Unbreakable armor is toggled on" << endl;
+				float shield = std::numeric_limits<double>::infinity();
+				WriteProcessMemory(GetHandle, LPVOID(Playerptr + 0x548), &shield, sizeof(shield), 0);
+				cout << shield << endl;
+
+
+			}
+
+			else {
+				cout << "Unbreakable armor is toggled off" << endl;
+				float shield = 100;
+				WriteProcessMemory(GetHandle, LPVOID(Playerptr + 0x548), &shield, sizeof(shield), 0);
+
+
+			}
+
 
 		}
 
 		if (GetAsyncKeyState(VK_F7)) {
-			//cout << ""
+			cout << "Choose, what stats you want to alter between: (muscle,stamina,maxhealth,fat,lung,money,respect,weaponskill)" << endl;
 			string UserInput;
 			cin >> UserInput;
 			this_thread::sleep_for(chrono::milliseconds(500));
 			if (toLower(UserInput) == "muscle") {
+				float value;
 				ReadProcessMemory(GetHandle, LPCVOID(MuscleAddr), &muscle, sizeof(muscle), 0);
 				cout << "Your current muscle stat is" << muscle << endl;
-
+				cout << "Type here how much to change that value?" << endl;
+				cin >> value;
+				float muscle = value;
+				WriteProcessMemory(GetHandle, LPVOID(MuscleAddr), &muscle, sizeof(muscle), 0);
 			}
 
 			else if (toLower(UserInput) == "stamina") {
-				ReadProcessMemory(GetHandle,LPCVOID(StaminaAddr), &stamina, sizeof(stamina), 0);
-				cout << "Your current stamina stat is" << muscle << endl;
-
+				float value;
+				ReadProcessMemory(GetHandle, LPCVOID(StaminaAddr), &stamina, sizeof(stamina), 0);
+				cout << "Your current stamina stat is" << stamina << endl;
+				cout << "Type here how much to change that value?" << endl;
+				cin >> value;
+				float stamina = value;
+				WriteProcessMemory(GetHandle, LPVOID(StaminaAddr), &stamina, sizeof(stamina), 0);
 			}
 			else if (toLower(UserInput) == "fat") {
+				float value;
 				ReadProcessMemory(GetHandle, LPCVOID(FatAddr), &fatness, sizeof(fatness), 0);
-				cout << "Your current fat stat is" << muscle << endl;
-
+				cout << "Your current fat stat is" << fatness << endl;
+				cout << "Type here how much to change that value?" << endl;
+				cin >> value;
+				float fat = value;
+				WriteProcessMemory(GetHandle, LPVOID(FatAddr), &fat, sizeof(fat), 0);
 			}
 			else if (toLower(UserInput) == "lung") {
+				float value;
 				ReadProcessMemory(GetHandle, LPCVOID(LungCapacityAddr), &lung, sizeof(lung), 0);
-				cout << "Your current lung stat is" << muscle << endl;
+				cout << "Your current lung stat is" << lung << endl;
+				cout << "Type here how much to change that value?" << endl;
+				cin >> value;
+				float lung = value;
+				WriteProcessMemory(GetHandle, LPVOID(LungCapacityAddr), &lung, sizeof(lung), 0);
 			}
 
 			else if (toLower(UserInput) == "maxhealth") {
+				float value;
 				ReadProcessMemory(GetHandle, LPCVOID(MaxHealthAddr), &maxhealth, sizeof(maxhealth), 0);
-				cout << "Your current maxhealth stat is" << muscle << endl;
-
+				cout << "Your current maxhealth stat is" << maxhealth << endl;
+				cout << "Type here how much to change that value?" << endl;
+				cin >> value;
+				float maxhealth = value;
+				WriteProcessMemory(GetHandle, LPVOID(MaxHealthAddr), &maxhealth, sizeof(maxhealth), 0);
 			}
 
 
@@ -206,52 +334,147 @@ void choosecheatmenumode(DWORD pid,HANDLE GetHandle) {
 			}
 
 			else if (toLower(UserInput) == "respect") {
-				ReadProcessMemory(GetHandle, LPCVOID();
-				cout << "Your current respect stat is" << muscle << endl;
+				float value;
+				ReadProcessMemory(GetHandle, LPCVOID(RespectAddr), &respect, sizeof(respect), 0);
+				cout << "Your current respect stat is" << respect << endl;
+				cout << "Type here how much to change that value?" << endl;
+				cin >> value;
+				float respect = value;
+				WriteProcessMemory(GetHandle, LPVOID(RespectAddr), &respect, sizeof(respect), 0);
 
 			}
 
-			/*	else if (toLower(UserInput) == "weaponskill") {
-					ReadProcessMemory();
-					cout << "Your current muscle stat is" << muscle << endl;
+			else if (toLower(UserInput) == "weaponskill") {
+				vector<DWORD> weaponskilladdresses = { skillpistoladdr,skillsilenecedpistoladdr,skillDeagleaddr,skillshotgunaddr,skillsawnaddr,skillcombatshotgunaddr,skillmachinepistoladdr,skillsmgaddr,skillak47addr,skillm4addr };
+				float weaponskillval;
+				vector<string> weapons = { "Pistol skill","Silenced pistol skill","Deagle skill","Shotgun skill","Shotgun Sawn skill","Combat Shotgun skill","Machine pistol skill","Smg pistol skill","Ak-47 skill","M4 skill" };
+				string userinput;
+				Zip<std::vector<DWORD>, std::vector<string>> zipped(weaponskilladdresses, weapons);
+
+				for (const auto& pair : zipped) {
+					DWORD weaponskilladdr = pair.first;
+					string weapon = pair.second;
+					ReadProcessMemory(GetHandle, LPCVOID(weaponskilladdr), &weaponskillval, sizeof(weaponskillval), 0);
+					std::cout << "Your\t" << weapon << "\t" << weaponskillval << endl;
 
 				}
 
-				else if (toLower(UserInput) == "driveskill") {
+				cout << "Choose, what weaponskill you want to alter between : (pistol, silencedpistol, deagle, shotgun, sawn, combatshotgun, machinepistol, smg,ak-47,m4)" << endl;
+				cin >> userinput;
+
+				const float weaponskillmax = 1000;
+				if (toLower(userinput) == "all") {
+
+					for (DWORD weaponskilladdr : weaponskilladdresses) {
+						WriteProcessMemory(GetHandle, LPVOID(weaponskilladdr), &weaponskillmax, sizeof(weaponskillmax), 0);
+					}
+
+
+				}
+
+				else if (toLower(userinput) == "pistol") {
+					WriteProcessMemory(GetHandle, LPVOID(skillpistoladdr), &weaponskillmax, sizeof(weaponskillmax), 0);
+
+
+				}
+
+				else if (toLower(userinput) == "silencedpistol") {
+					WriteProcessMemory(GetHandle, LPVOID(skillsilenecedpistoladdr), &weaponskillmax, sizeof(weaponskillmax), 0);
+
+
+				}
+
+				else if (toLower(userinput) == "deagle") {
+					WriteProcessMemory(GetHandle, LPVOID(skillDeagleaddr), &weaponskillmax, sizeof(weaponskillmax), 0);
+
+
+				}
+
+				else if (toLower(userinput) == "shotgun") {
+					WriteProcessMemory(GetHandle, LPVOID(skillshotgunaddr), &weaponskillmax, sizeof(weaponskillmax), 0);
+
+
+				}
+
+				else if (toLower(userinput) == "sawnshotgun") {
+					WriteProcessMemory(GetHandle, LPVOID(skillsawnaddr), &weaponskillmax, sizeof(weaponskillmax), 0);
+
+
+				}
+
+				else if (toLower(userinput) == "combatshotgun") {
+					WriteProcessMemory(GetHandle, LPVOID(skillcombatshotgunaddr), &weaponskillmax, sizeof(weaponskillmax), 0);
+
+
+				}
+
+				else if (toLower(userinput) == "machinepistol") {
+					WriteProcessMemory(GetHandle, LPVOID(skillmachinepistoladdr), &weaponskillmax, sizeof(weaponskillmax), 0);
+
+
+				}
+
+				else if (toLower(userinput) == "smg") {
+					WriteProcessMemory(GetHandle, LPVOID(skillsmgaddr), &weaponskillmax, sizeof(weaponskillmax), 0);
+
+
+				}
+
+				else if ((toLower(userinput) == "ak47") or (toLower(userinput) == "ak-47")) {
+					WriteProcessMemory(GetHandle, LPVOID(skillak47addr), &weaponskillmax, sizeof(weaponskillmax), 0);
+
+
+				}
+
+				else if (toLower(userinput) == "m4") {
+					WriteProcessMemory(GetHandle, LPVOID(skillm4addr), &weaponskillmax, sizeof(weaponskillmax), 0);
+
+
+				}
+				/*for () {
 					ReadProcessMemory();
-					cout << "Your current muscle stat is" << muscle << endl;*/
+					cout << "Your current muscle stat is" << muscle << endl;
+				}*/
+			}
+
+
+			/*else if (toLower(UserInput) == "driveskill") {
+				ReadProcessMemory();
+				cout << "Your current muscle stat is" << muscle << endl; */
+
+				//}
+
+
+
+
+
 
 			//}
 
 
+			/*if (GetAsyncKeyState(VK_F4)) {
+
+
+			}
+
+			if (GetAsyncKeyState(VK_F5)) {
 
 
 
+			}*/
 
+
+
+			//}
 		}
-
-
-		/*if (GetAsyncKeyState(VK_F4)) {
-
-
-		}
-
-		if (GetAsyncKeyState(VK_F5)) {
-
-
-
-		}*/
-
-
-
 	}
 }
 
 
 int main() {
-	HWND getwindowtitle = FindWindowA(0,"GTA: San Andreas");
+	HWND getwindowtitle = FindWindowA(0, "GTA: San Andreas");
 	if (not getwindowtitle == 0) {
-		cout << "Window founded" << endl;
+		cout << "Window found" << endl;
 
 	}
 
@@ -263,9 +486,9 @@ int main() {
 
 	DWORD pid;
 	GetWindowThreadProcessId(getwindowtitle, &pid);
-	HANDLE GetHandle = OpenProcess(PROCESS_ALL_ACCESS,0,pid);
+	HANDLE GetHandle = OpenProcess(PROCESS_ALL_ACCESS, 0, pid);
 
-	choosecheatmenumode(pid,GetHandle);
+	choosecheatmenumode(pid, GetHandle);
 	/*DWORD FatAddress = 0xB793D4;
 	DWORD x = 0x14;
 	DWORD y = 0x0;
