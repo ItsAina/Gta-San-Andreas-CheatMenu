@@ -148,6 +148,7 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 	DWORD SpawnRomaddr = 0xB7B6C4;
 
 
+	DWORD minigunoffset = 0x5AC;
 
 	void* PlayerObject = (void*)(BaseAddr + PlayerObj);
 	void* xobj = (void*)(BaseAddr + xaddrstatic);
@@ -157,6 +158,8 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 	uintptr_t xptr;
 	uintptr_t yptr;
 	uintptr_t zptr;
+	float xcoord, ycoord, zcoord;
+
 
 	ReadProcessMemory(GetHandle, PlayerObject, &Playerptr, sizeof(Playerptr), 0);
 	ReadProcessMemory(GetHandle, xobj, &xptr, sizeof(xptr), 0);
@@ -168,18 +171,34 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 	bool godmode = false;
 	bool unbreakableshield = false;
 	bool infiniteammo = false;
+	bool overwrite = true;
+	int toggle = 0;
+	int toggle2 = 0;
 	int money;
 	float health, armor;
 	float maxhealth;
 	float fatness, stamina, muscle, lung, respect;
-	float x, y, z;
-	cout << "For toggle on godmode, press: F2\t For toggle on infinite ammo, press: F4\t For changing xyz position, press: F5\t For infinity armor, press: F6\nFor altering stats, press: F7\t";
+	float currenthealth;
+	uintptr_t x, y, z;
 	while (true) {
+		if (overwrite) {
+			cout << "For toggle on godmode, press: F2\t For toggle on infinite ammo, press: F4\t For changing xyz position, press: F5\t For infinity armor, press: F6\nFor altering stats, press: F7\t";
+			overwrite = false;
+		}
+
+
 		if (GetAsyncKeyState(VK_F2)) {
 			godmode = not godmode;
+			if (toggle == 0) {
+				ReadProcessMemory(GetHandle, LPVOID(Playerptr + 0x540), &currenthealth, sizeof(currenthealth), 0);
+
+
+			}
 			this_thread::sleep_for(chrono::milliseconds(200));
 			//cout << godmode << endl;
 			if (godmode) {
+				cout << currenthealth << endl;
+				toggle = 1;
 				cout << "God mode is toggled on" << endl;
 				health = std::numeric_limits<double>::infinity();
 				WriteProcessMemory(GetHandle, LPVOID(Playerptr + 0x540), &health, sizeof(health), 0);
@@ -188,13 +207,13 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 			}
 
 			else {
+				toggle = 0;
 				cout << "God mode is toggled off" << endl;
-			
-				float newhealth = 100;
-				WriteProcessMemory(GetHandle, LPVOID(Playerptr + 0x540), &newhealth, sizeof(newhealth), 0);
-
+				WriteProcessMemory(GetHandle, LPVOID(Playerptr + 0x540), &currenthealth, sizeof(currenthealth), 0);
+				overwrite = true;
 
 			}
+
 		}
 
 		if (GetAsyncKeyState(VK_F4)) {
@@ -212,20 +231,23 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 				cout << "Infinity ammo is off" << endl;
 				int ammoinfinity = 0;
 				WriteProcessMemory(GetHandle, LPVOID(infiniteammoaddr), &ammoinfinity, sizeof(ammoinfinity), 0);
-
+				overwrite = true;
 
 			}
-		
+
 
 
 
 		}
 
 		if (GetAsyncKeyState(VK_F5)) {
-			ReadProcessMemory(GetHandle, LPCVOID(xptr + 0x30), &x, sizeof(x), 0);
-			ReadProcessMemory(GetHandle, LPCVOID(yptr + 0x34), &y, sizeof(y), 0);
-			ReadProcessMemory(GetHandle, LPCVOID(zptr + 0x38), &z, sizeof(z), 0);
-			cout << "Your current position of:\t" << "x:" << x << "\t" << "y:" << y << "\t" << "z:" << z << "\n";
+			ReadProcessMemory(GetHandle, LPCVOID(xptr + 0x14), &x, sizeof(x), 0);
+			ReadProcessMemory(GetHandle, LPCVOID(yptr + 0x14), &y, sizeof(y), 0);
+			ReadProcessMemory(GetHandle, LPCVOID(zptr + 0x14), &z, sizeof(z), 0);
+			ReadProcessMemory(GetHandle, LPCVOID(x + 0x30), &xcoord, sizeof(xcoord), 0);
+			ReadProcessMemory(GetHandle, LPCVOID(x + 0x34), &ycoord, sizeof(ycoord), 0);
+			ReadProcessMemory(GetHandle, LPCVOID(y + 0x38), &zcoord, sizeof(zcoord), 0);
+			cout << "Your current position of:\t" << "x:" << xcoord << "\t" << "y:" << ycoord << "\t" << "z:" << zcoord << "\n";
 			cout << "Add coordinates for x" << endl;
 			cin >> x;
 			cout << "Add coordinates for y" << endl;
@@ -259,16 +281,16 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 
 			}
 
-			else {
+			else
 				cout << "Unbreakable armor is toggled off" << endl;
-				float shield = 100;
-				WriteProcessMemory(GetHandle, LPVOID(Playerptr + 0x548), &shield, sizeof(shield), 0);
-
-
-			}
-
+			float shield = 100;
+			WriteProcessMemory(GetHandle, LPVOID(Playerptr + 0x548), &shield, sizeof(shield), 0);
+			overwrite = true;
 
 		}
+
+
+
 
 		if (GetAsyncKeyState(VK_F7)) {
 			cout << "Choose, what stats you want to alter between: (muscle,stamina,maxhealth,fat,lung,money,respect,weaponskill)" << endl;
@@ -278,69 +300,83 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 			if (toLower(UserInput) == "muscle") {
 				float value;
 				ReadProcessMemory(GetHandle, LPCVOID(MuscleAddr), &muscle, sizeof(muscle), 0);
-				cout << "Your current muscle stat is" << muscle << endl;
+				cout << "Your current muscle stat is\t" << muscle << endl;
 				cout << "Type here how much to change that value?" << endl;
 				cin >> value;
 				float muscle = value;
+				cout << "Succesfully overwrite muscle value to " << muscle << endl;
 				WriteProcessMemory(GetHandle, LPVOID(MuscleAddr), &muscle, sizeof(muscle), 0);
+				overwrite = true;
 			}
 
 			else if (toLower(UserInput) == "stamina") {
 				float value;
 				ReadProcessMemory(GetHandle, LPCVOID(StaminaAddr), &stamina, sizeof(stamina), 0);
-				cout << "Your current stamina stat is" << stamina << endl;
+				cout << "Your current stamina stat is\t" << stamina << endl;
 				cout << "Type here how much to change that value?" << endl;
 				cin >> value;
 				float stamina = value;
+				cout << "Succesfully overwrite stamina value to " << stamina << endl;
 				WriteProcessMemory(GetHandle, LPVOID(StaminaAddr), &stamina, sizeof(stamina), 0);
+				overwrite = true;
 			}
 			else if (toLower(UserInput) == "fat") {
 				float value;
 				ReadProcessMemory(GetHandle, LPCVOID(FatAddr), &fatness, sizeof(fatness), 0);
-				cout << "Your current fat stat is" << fatness << endl;
+				cout << "Your current fat stat is\t" << fatness << endl;
 				cout << "Type here how much to change that value?" << endl;
 				cin >> value;
 				float fat = value;
+				cout << "Succesfully overwrite fat value to " << fat << endl;
 				WriteProcessMemory(GetHandle, LPVOID(FatAddr), &fat, sizeof(fat), 0);
+				overwrite = true;
 			}
 			else if (toLower(UserInput) == "lung") {
 				float value;
 				ReadProcessMemory(GetHandle, LPCVOID(LungCapacityAddr), &lung, sizeof(lung), 0);
-				cout << "Your current lung stat is" << lung << endl;
+				cout << "Your current lung stat is\t" << lung << endl;
 				cout << "Type here how much to change that value?" << endl;
 				cin >> value;
 				float lung = value;
+				cout << "Succesfully overwrite lung value to " << lung << endl;
 				WriteProcessMemory(GetHandle, LPVOID(LungCapacityAddr), &lung, sizeof(lung), 0);
+				overwrite = true;
 			}
 
 			else if (toLower(UserInput) == "maxhealth") {
 				float value;
 				ReadProcessMemory(GetHandle, LPCVOID(MaxHealthAddr), &maxhealth, sizeof(maxhealth), 0);
-				cout << "Your current maxhealth stat is" << maxhealth << endl;
+				cout << "Your current maxhealth stat is\t" << maxhealth << endl;
 				cout << "Type here how much to change that value?" << endl;
 				cin >> value;
 				float maxhealth = value;
+				cout << "Succesfully overwrite maxhealth value to " << maxhealth << endl;
 				WriteProcessMemory(GetHandle, LPVOID(MaxHealthAddr), &maxhealth, sizeof(maxhealth), 0);
+				overwrite = true;
 			}
 
 
 			else if (toLower(UserInput) == "money") {
 				ReadProcessMemory(GetHandle, LPCVOID(MoneyAddr), &money, sizeof(money), 0);
-				cout << "Your current money is" << "$" << money << endl;
+				cout << "Your current money is\t" << "$" << money << endl;
 				cout << "How much money, you want to add?" << endl;
 				cin >> money;
+				cout << "Succesfully overwrite money value to " << money << endl;
 				WriteProcessMemory(GetHandle, LPVOID(MoneyAddr), &money, sizeof(money), 0);
+				overwrite = true;
 
 			}
 
 			else if (toLower(UserInput) == "respect") {
 				float value;
 				ReadProcessMemory(GetHandle, LPCVOID(RespectAddr), &respect, sizeof(respect), 0);
-				cout << "Your current respect stat is" << respect << endl;
+				cout << "Your current respect stat is\t" << respect << endl;
 				cout << "Type here how much to change that value?" << endl;
 				cin >> value;
 				float respect = value;
+				cout << "Succesfully overwrite respect value to " << respect << endl;
 				WriteProcessMemory(GetHandle, LPVOID(RespectAddr), &respect, sizeof(respect), 0);
+				overwrite = true;
 
 			}
 
@@ -367,6 +403,8 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 
 					for (DWORD weaponskilladdr : weaponskilladdresses) {
 						WriteProcessMemory(GetHandle, LPVOID(weaponskilladdr), &weaponskillmax, sizeof(weaponskillmax), 0);
+						cout << "All weapon skills are maximized" << endl;
+						overwrite = true;
 					}
 
 
@@ -374,62 +412,62 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 
 				else if (toLower(userinput) == "pistol") {
 					WriteProcessMemory(GetHandle, LPVOID(skillpistoladdr), &weaponskillmax, sizeof(weaponskillmax), 0);
-
-
+					cout << "Succesfully maximize weapon skill of pistol" << endl;
+					overwrite = true;
 				}
 
 				else if (toLower(userinput) == "silencedpistol") {
 					WriteProcessMemory(GetHandle, LPVOID(skillsilenecedpistoladdr), &weaponskillmax, sizeof(weaponskillmax), 0);
-
-
+					cout << "Succesfully maximize weapon skill of silencedpistol" << endl;
+					overwrite = true;
 				}
 
 				else if (toLower(userinput) == "deagle") {
 					WriteProcessMemory(GetHandle, LPVOID(skillDeagleaddr), &weaponskillmax, sizeof(weaponskillmax), 0);
-
-
+					cout << "Succesfully maximize weapon skill of deagle" << endl;
+					overwrite = true;
 				}
 
 				else if (toLower(userinput) == "shotgun") {
 					WriteProcessMemory(GetHandle, LPVOID(skillshotgunaddr), &weaponskillmax, sizeof(weaponskillmax), 0);
-
-
+					cout << "Succesfully maximize weapon skill of shotgun" << endl;
+					overwrite = true;
 				}
 
 				else if (toLower(userinput) == "sawnshotgun") {
 					WriteProcessMemory(GetHandle, LPVOID(skillsawnaddr), &weaponskillmax, sizeof(weaponskillmax), 0);
-
-
+					cout << "Succesfully maximize weapon skill of sawnshotgun" << endl;
+					overwrite = true;
 				}
 
 				else if (toLower(userinput) == "combatshotgun") {
 					WriteProcessMemory(GetHandle, LPVOID(skillcombatshotgunaddr), &weaponskillmax, sizeof(weaponskillmax), 0);
-
-
+					cout << "Succesfully maximize weapon skill of combatshotgun" << endl;
+					overwrite = true;
 				}
 
 				else if (toLower(userinput) == "machinepistol") {
 					WriteProcessMemory(GetHandle, LPVOID(skillmachinepistoladdr), &weaponskillmax, sizeof(weaponskillmax), 0);
-
-
+					cout << "Succesfully maximize weapon skill of machinepistol" << endl;
+					overwrite = true;
 				}
 
 				else if (toLower(userinput) == "smg") {
 					WriteProcessMemory(GetHandle, LPVOID(skillsmgaddr), &weaponskillmax, sizeof(weaponskillmax), 0);
-
-
+					cout << "Succesfully maximize weapon skill of smg" << endl;
+					overwrite = true;
 				}
 
 				else if ((toLower(userinput) == "ak47") or (toLower(userinput) == "ak-47")) {
 					WriteProcessMemory(GetHandle, LPVOID(skillak47addr), &weaponskillmax, sizeof(weaponskillmax), 0);
-
-
+					cout << "Succesfully maximize weapon skill of ak-47" << endl;
+					overwrite = true;
 				}
 
 				else if (toLower(userinput) == "m4") {
 					WriteProcessMemory(GetHandle, LPVOID(skillm4addr), &weaponskillmax, sizeof(weaponskillmax), 0);
-
-
+					cout << "Succesfully maximize weapon skill of m4" << endl;
+					overwrite = true;
 				}
 				/*for () {
 					ReadProcessMemory();
@@ -468,6 +506,7 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 			//}
 		}
 	}
+
 }
 
 
