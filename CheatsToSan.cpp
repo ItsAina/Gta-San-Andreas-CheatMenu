@@ -146,7 +146,7 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 	DWORD skillm4addr = 0xB7BB38;
 	DWORD infiniteammoaddr = 0x96B7F8;
 	DWORD SpawnRomaddr = 0xB7B6C4;
-
+	DWORD Unbreakablecar = 0x96B7E4;
 
 	DWORD minigunoffset = 0x5AC;
 
@@ -170,11 +170,13 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 	//DWORD Offset = getpointeraddress(getwindowtitle,PlayerObjectAddr,offsets);
 	bool godmode = false;
 	bool unbreakableshield = false;
+	bool unbreakablecar = false;
 	bool infiniteammo = false;
 	bool overwrite = true;
 	int toggle = 0;
 	int toggle2 = 0;
 	int money;
+	int cartoggle;
 	float health, armor;
 	float maxhealth;
 	float fatness, stamina, muscle, lung, respect;
@@ -182,7 +184,7 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 	uintptr_t x, y, z;
 	while (true) {
 		if (overwrite) {
-			cout << "For toggle on godmode, press: F2\t For toggle on infinite ammo, press: F4\t For changing xyz position, press: F5\t For infinity armor, press: F6\nFor altering stats, press: F7\t";
+			cout << "For toggle on godmode, press: F2\t For toggle on infinite ammo, press: F4\t For changing xyz position, press: F5\t For infinity armor, press: F6\nFor altering stats, press: F7\t For undestroyable car, press: F8\n";
 			overwrite = false;
 		}
 
@@ -380,6 +382,19 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 
 			}
 
+			else if (toLower(UserInput) == "wantedlevel") {
+
+
+
+
+			}
+
+			else if (toLower(UserInput) == "neverwanted") {
+
+
+
+			}
+
 			else if (toLower(UserInput) == "weaponskill") {
 				vector<DWORD> weaponskilladdresses = { skillpistoladdr,skillsilenecedpistoladdr,skillDeagleaddr,skillshotgunaddr,skillsawnaddr,skillcombatshotgunaddr,skillmachinepistoladdr,skillsmgaddr,skillak47addr,skillm4addr };
 				float weaponskillval;
@@ -504,6 +519,35 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 
 
 			//}
+		}
+
+		if (GetAsyncKeyState(VK_F8)) {
+			int invinciblecar;
+			unbreakablecar = not unbreakablecar;
+			if (toggle2 == 0) {
+				ReadProcessMemory(GetHandle, LPVOID(Unbreakablecar), &invinciblecar, sizeof(invinciblecar), 0);
+
+
+			}
+			this_thread::sleep_for(chrono::milliseconds(200));
+			//cout << godmode << endl;
+			if (unbreakablecar || invinciblecar==1) {
+				toggle2 = 1;
+				cout << "Invincible car is toggled on" << endl;
+				WriteProcessMemory(GetHandle, LPVOID(Unbreakablecar),&toggle2,sizeof(toggle2),0);
+
+
+			}
+
+			else if (unbreakablecar || invinciblecar == 0) {
+				toggle2 = 0;
+				cout << "Invincible car is toggled off" << endl;
+				WriteProcessMemory(GetHandle, LPVOID(Unbreakablecar), &toggle2, sizeof(toggle2), 0);
+				overwrite = true;
+
+			}
+
+
 		}
 	}
 
