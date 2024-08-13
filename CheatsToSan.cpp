@@ -147,13 +147,12 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 	DWORD infiniteammoaddr = 0x96B7F8;
 	DWORD SpawnRomaddr = 0xB7B6C4;
 	DWORD Unbreakablecar = 0x96B7E4;
-
+	DWORD neverwanted = 0x96B7F0;
 	DWORD minigunoffset = 0x5AC;
+	DWORD megapunch = 0x96B7EC;
+	DWORD invicible = 0x96B7F0;
 
 	void* PlayerObject = (void*)(BaseAddr + PlayerObj);
-	void* xobj = (void*)(BaseAddr + xaddrstatic);
-	void* yobj = (void*)(BaseAddr + yaddrstatic);
-	void* zobj = (void*)(BaseAddr + zaddrstatic);
 	uintptr_t Playerptr;
 	uintptr_t xptr;
 	uintptr_t yptr;
@@ -162,9 +161,9 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 
 
 	ReadProcessMemory(GetHandle, PlayerObject, &Playerptr, sizeof(Playerptr), 0);
-	ReadProcessMemory(GetHandle, xobj, &xptr, sizeof(xptr), 0);
+	/*ReadProcessMemory(GetHandle, xobj, &xptr, sizeof(xptr), 0);
 	ReadProcessMemory(GetHandle, yobj, &zptr, sizeof(zptr), 0);
-	ReadProcessMemory(GetHandle, zobj, &yptr, sizeof(yptr), 0);
+	ReadProcessMemory(GetHandle, zobj, &yptr, sizeof(yptr), 0);*/
 
 
 	//DWORD Offset = getpointeraddress(getwindowtitle,PlayerObjectAddr,offsets);
@@ -175,13 +174,15 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 	bool overwrite = true;
 	int toggle = 0;
 	int toggle2 = 0;
+	int armortoggle = 0;
 	int money;
 	int cartoggle;
 	float health, armor;
 	float maxhealth;
 	float fatness, stamina, muscle, lung, respect;
 	float currenthealth;
-	uintptr_t x, y, z;
+	float shield;
+	DWORD x, y, z;
 	while (true) {
 		if (overwrite) {
 			cout << "For toggle on godmode, press: F2\t For toggle on infinite ammo, press: F4\t For changing xyz position, press: F5\t For infinity armor, press: F6\nFor altering stats, press: F7\t For undestroyable car, press: F8\n";
@@ -203,18 +204,24 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 				toggle = 1;
 				cout << "God mode is toggled on" << endl;
 				health = std::numeric_limits<double>::infinity();
+				int megapunchtoggle = 256;
+				int invinciblehealth = 16777216;
 				WriteProcessMemory(GetHandle, LPVOID(Playerptr + 0x540), &health, sizeof(health), 0);
-
-
+				WriteProcessMemory(GetHandle, LPVOID(invicible), &invinciblehealth, sizeof(invinciblehealth), 0);
+				WriteProcessMemory(GetHandle, LPVOID(megapunch), &megapunchtoggle, sizeof(megapunchtoggle), 0);
 			}
 
 			else {
 				toggle = 0;
+				int megapunchtoggle = 0;
+				int invinciblehealth = 0;
 				cout << "God mode is toggled off" << endl;
 				WriteProcessMemory(GetHandle, LPVOID(Playerptr + 0x540), &currenthealth, sizeof(currenthealth), 0);
-				overwrite = true;
+				WriteProcessMemory(GetHandle, LPVOID(invicible), &invinciblehealth, sizeof(invinciblehealth), 0);
+				WriteProcessMemory(GetHandle, LPVOID(megapunch), &megapunchtoggle, sizeof(megapunchtoggle), 0);
 
 			}
+			overwrite = true;
 
 		}
 
@@ -233,9 +240,10 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 				cout << "Infinity ammo is off" << endl;
 				int ammoinfinity = 0;
 				WriteProcessMemory(GetHandle, LPVOID(infiniteammoaddr), &ammoinfinity, sizeof(ammoinfinity), 0);
-				overwrite = true;
+
 
 			}
+			overwrite = true;
 
 
 
@@ -243,24 +251,25 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 		}
 
 		if (GetAsyncKeyState(VK_F5)) {
-			ReadProcessMemory(GetHandle, LPCVOID(xptr + 0x14), &x, sizeof(x), 0);
-			ReadProcessMemory(GetHandle, LPCVOID(yptr + 0x14), &y, sizeof(y), 0);
-			ReadProcessMemory(GetHandle, LPCVOID(zptr + 0x14), &z, sizeof(z), 0);
+			ReadProcessMemory(GetHandle, LPCVOID(Playerptr + 0x14), &x, sizeof(x), 0);
+			ReadProcessMemory(GetHandle, LPCVOID(Playerptr + 0x14), &y, sizeof(y), 0);
+			ReadProcessMemory(GetHandle, LPCVOID(Playerptr + 0x14), &z, sizeof(z), 0);
 			ReadProcessMemory(GetHandle, LPCVOID(x + 0x30), &xcoord, sizeof(xcoord), 0);
-			ReadProcessMemory(GetHandle, LPCVOID(x + 0x34), &ycoord, sizeof(ycoord), 0);
-			ReadProcessMemory(GetHandle, LPCVOID(y + 0x38), &zcoord, sizeof(zcoord), 0);
+			ReadProcessMemory(GetHandle, LPCVOID(y + 0x34), &ycoord, sizeof(ycoord), 0);
+			ReadProcessMemory(GetHandle, LPCVOID(z + 0x38), &zcoord, sizeof(zcoord), 0);
 			cout << "Your current position of:\t" << "x:" << xcoord << "\t" << "y:" << ycoord << "\t" << "z:" << zcoord << "\n";
 			cout << "Add coordinates for x" << endl;
-			cin >> x;
+			cin >> xcoord;
 			cout << "Add coordinates for y" << endl;
-			cin >> y;
+			cin >> ycoord;
 			cout << "Add coordinates for z" << endl;
-			cin >> z;
+			cin >> zcoord;
 
 
-			WriteProcessMemory(GetHandle, LPVOID(xptr + 0x30), &x, sizeof(x), 0);
-			WriteProcessMemory(GetHandle, LPVOID(yptr + 0x34), &y, sizeof(y), 0);
-			WriteProcessMemory(GetHandle, LPVOID(zptr + 0x38), &z, sizeof(z), 0);
+			WriteProcessMemory(GetHandle, LPVOID(x + 0x30), &xcoord, sizeof(xcoord), 0);
+			WriteProcessMemory(GetHandle, LPVOID(y + 0x34), &ycoord, sizeof(ycoord), 0);
+			WriteProcessMemory(GetHandle, LPVOID(z + 0x38), &zcoord, sizeof(zcoord), 0);
+			overwrite = true;
 			/*		int counter = 0;
 					for (float coordinate : coordinates) {
 						WriteProcessMemory(GetHandle, LPVOID(locationpointer[counter] + locationoffsets[counter]), &coordinate, sizeof(coordinate), 0);
@@ -272,9 +281,15 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 
 		if (GetAsyncKeyState(VK_F6)) {
 			unbreakableshield = not unbreakableshield;
+			if (armortoggle == 0) {
+				ReadProcessMemory(GetHandle, LPVOID(Playerptr + 0x548), &shield, sizeof(shield), 0);
+
+
+			}
 			this_thread::sleep_for(chrono::milliseconds(500));
 			//cout << godmode << endl;
 			if (unbreakableshield) {
+				armortoggle = 1;
 				cout << "Unbreakable armor is toggled on" << endl;
 				float shield = std::numeric_limits<double>::infinity();
 				WriteProcessMemory(GetHandle, LPVOID(Playerptr + 0x548), &shield, sizeof(shield), 0);
@@ -283,12 +298,13 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 
 			}
 
-			else
+			else {
+				armortoggle = 0;
 				cout << "Unbreakable armor is toggled off" << endl;
-			float shield = 100;
-			WriteProcessMemory(GetHandle, LPVOID(Playerptr + 0x548), &shield, sizeof(shield), 0);
-			overwrite = true;
+				WriteProcessMemory(GetHandle, LPVOID(Playerptr + 0x548), &shield, sizeof(shield), 0);
 
+			}
+			overwrite = true;
 		}
 
 
@@ -382,15 +398,17 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 
 			}
 
-			else if (toLower(UserInput) == "wantedlevel") {
+			/*else if (toLower(UserInput) == "wantedlevel") {
 
 
 
 
-			}
+			}*/
 
 			else if (toLower(UserInput) == "neverwanted") {
-
+				int activate = 256;
+				WriteProcessMemory(GetHandle, LPVOID(neverwanted), &activate, sizeof(activate), 0);
+				cout << "never wanted is on" << endl;
 
 
 			}
@@ -531,10 +549,10 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 			}
 			this_thread::sleep_for(chrono::milliseconds(200));
 			//cout << godmode << endl;
-			if (unbreakablecar || invinciblecar==1) {
+			if (unbreakablecar || invinciblecar == 1) {
 				toggle2 = 1;
 				cout << "Invincible car is toggled on" << endl;
-				WriteProcessMemory(GetHandle, LPVOID(Unbreakablecar),&toggle2,sizeof(toggle2),0);
+				WriteProcessMemory(GetHandle, LPVOID(Unbreakablecar), &toggle2, sizeof(toggle2), 0);
 
 
 			}
@@ -543,9 +561,10 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 				toggle2 = 0;
 				cout << "Invincible car is toggled off" << endl;
 				WriteProcessMemory(GetHandle, LPVOID(Unbreakablecar), &toggle2, sizeof(toggle2), 0);
-				overwrite = true;
+				
 
 			}
+			overwrite = true;
 
 
 		}
