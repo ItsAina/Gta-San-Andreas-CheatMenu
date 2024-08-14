@@ -149,8 +149,8 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 	DWORD Unbreakablecar = 0x96B7E4;
 	DWORD neverwanted = 0x96B7F0;
 	DWORD minigunoffset = 0x5AC;
-	DWORD megapunch = 0x96B7EC;
-	DWORD invicible = 0x96B7F0;
+	DWORD invincible = 0x96B7EC;
+	DWORD megapunch = 0x96B7F0;
 
 	void* PlayerObject = (void*)(BaseAddr + PlayerObj);
 	uintptr_t Playerptr;
@@ -204,20 +204,20 @@ void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
 				toggle = 1;
 				cout << "God mode is toggled on" << endl;
 				health = std::numeric_limits<double>::infinity();
-				int megapunchtoggle = 256;
-				int invinciblehealth = 16777216;
+				int invinciblehealth = 257;
+				int megapunchtoggle = 16777216;
 				WriteProcessMemory(GetHandle, LPVOID(Playerptr + 0x540), &health, sizeof(health), 0);
-				WriteProcessMemory(GetHandle, LPVOID(invicible), &invinciblehealth, sizeof(invinciblehealth), 0);
+				WriteProcessMemory(GetHandle, LPVOID(invincible), &invinciblehealth, sizeof(invinciblehealth), 0);
 				WriteProcessMemory(GetHandle, LPVOID(megapunch), &megapunchtoggle, sizeof(megapunchtoggle), 0);
 			}
 
 			else {
 				toggle = 0;
-				int megapunchtoggle = 0;
 				int invinciblehealth = 0;
+				int megapunchtoggle = 0;
 				cout << "God mode is toggled off" << endl;
 				WriteProcessMemory(GetHandle, LPVOID(Playerptr + 0x540), &currenthealth, sizeof(currenthealth), 0);
-				WriteProcessMemory(GetHandle, LPVOID(invicible), &invinciblehealth, sizeof(invinciblehealth), 0);
+				WriteProcessMemory(GetHandle, LPVOID(invincible), &invinciblehealth, sizeof(invinciblehealth), 0);
 				WriteProcessMemory(GetHandle, LPVOID(megapunch), &megapunchtoggle, sizeof(megapunchtoggle), 0);
 
 			}
