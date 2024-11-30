@@ -103,20 +103,20 @@ DWORD getbasemoduleaddress(const wchar_t* modulename, DWORD pid) {
 }
 
 
-DWORD findrealptr(HANDLE myhandle,DWORD localplayerptr, std::vector<DWORD>offsets) {
+DWORD findrealptr(HANDLE myhandle, DWORD localplayerptr, std::vector<DWORD>offsets) {
 	DWORD realaddress = localplayerptr;
-	for (int i = 0; i < offsets.size(); i++){
-		if (i + 1 == offsets.size() && !offsets.size() == 1) {
-			return realaddress+offsets[i];
+	for (int i = 0; i < offsets.size(); i++) {
+		if (offsets.size() != 1 && (i + 1 == offsets.size())) {
+			realaddress + offsets[i];
+			return realaddress + offsets[i];	
 		}
 		DWORD addressval;
-		cout << i << endl;
-		cout << realaddress << endl;
 		ReadProcessMemory(myhandle, LPCVOID(realaddress + offsets[i]), &addressval, sizeof(DWORD), 0);
-		realaddress =+ addressval;
+		realaddress = +addressval;
 	}
 	return realaddress;
 }
+
 
 
 void choosecheatmenumode(DWORD pid, HANDLE GetHandle) {
