@@ -103,16 +103,19 @@ DWORD getbasemoduleaddress(const wchar_t* modulename, DWORD pid) {
 }
 
 
-DWORD getpointeraddress(HANDLE phandle, DWORD PlayerObjectaddress, const vector<DWORD>& offsets) {
-	DWORD address = PlayerObjectaddress;
-
-	for (size_t i = 0; i < offsets.size(); ++i) {
-		ReadProcessMemory(phandle, (LPCVOID)address, &address, sizeof(address), nullptr);
-		address += offsets[i];
-		cout << address << endl;
+DWORD findrealptr(HANDLE myhandle,DWORD localplayerptr, std::vector<DWORD>offsets) {
+	DWORD realaddress = localplayerptr;
+	for (int i = 0; i < offsets.size(); i++){
+		if (i+1 == offsets.size()) {
+			return realaddress+offsets[i];
+		}
+		DWORD addressval;
+		cout << i << endl;
+		cout << realaddress << endl;
+		ReadProcessMemory(myhandle, LPCVOID(realaddress + offsets[i]), &addressval, sizeof(DWORD), 0);
+		realaddress =+ addressval;
 	}
-
-	return address;
+	return realaddress;
 }
 
 
