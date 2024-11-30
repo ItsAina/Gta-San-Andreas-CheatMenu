@@ -106,7 +106,7 @@ DWORD getbasemoduleaddress(const wchar_t* modulename, DWORD pid) {
 DWORD findrealptr(HANDLE myhandle,DWORD localplayerptr, std::vector<DWORD>offsets) {
 	DWORD realaddress = localplayerptr;
 	for (int i = 0; i < offsets.size(); i++){
-		if (i+1 == offsets.size()) {
+		if (i + 1 == offsets.size() && !offsets.size() == 1) {
 			return realaddress+offsets[i];
 		}
 		DWORD addressval;
