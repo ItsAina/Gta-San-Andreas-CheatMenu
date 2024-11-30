@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheatTable CheatEngineTableVersion="45">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>0</ID>
+      <Description>"No description"</Description>
+      <VariableType>4 Bytes</VariableType>
+      <Address>1610AA90</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>3</ID>
+      <Description>"pointerscan result"</Description>
+      <VariableType>4 Bytes</VariableType>
+      <Address>"PlantsVsZombies.exe"+00112050</Address>
+      <Offsets>
+        <Offset>5578</Offset>
+        <Offset>7C</Offset>
+        <Offset>15C</Offset>
+        <Offset>4</Offset>
+        <Offset>154</Offset>
+        <Offset>24</Offset>
+      </Offsets>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>5</ID>
+      <Description>"pointerscan result"</Description>
+      <VariableType>4 Bytes</VariableType>
+      <Address>"PlantsVsZombies.exe"+00112050</Address>
+      <Offsets>
+        <Offset>5578</Offset>
+        <Offset>7C</Offset>
+        <Offset>15C</Offset>
+        <Offset>4</Offset>
+        <Offset>154</Offset>
+        <Offset>3C</Offset>
+      </Offsets>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>6</ID>
+      <Description>"pointerscan result"</Description>
+      <VariableType>4 Bytes</VariableType>
+      <Address>"PlantsVsZombies.exe"+00112050</Address>
+      <Offsets>
+        <Offset>5578</Offset>
+        <Offset>7C</Offset>
+        <Offset>15C</Offset>
+        <Offset>4</Offset>
+        <Offset>154</Offset>
+        <Offset>4C</Offset>
+      </Offsets>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>10</ID>
+      <Description>"pointerscan result"</Description>
+      <VariableType>4 Bytes</VariableType>
+      <Address>"PlantsVsZombies.exe"+00112050</Address>
+      <Offsets>
+        <Offset>5578</Offset>
+        <Offset>7C</Offset>
+        <Offset>15C</Offset>
+        <Offset>4</Offset>
+        <Offset>154</Offset>
+        <Offset>18</Offset>
+        <Offset>30</Offset>
+      </Offsets>
+    </CheatEntry>
+  </CheatEntries>
+  <UserdefinedSymbols/>
+</CheatTable>
