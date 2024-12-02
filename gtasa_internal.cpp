@@ -7,9 +7,33 @@
 #include <tchar.h> 
 #include <iostream>
 
+using namespace std;
 
 
+class localplayerlist
+{
+public:
+    char pad_0004[72]; //0x0004
+    float jump; //0x004C
+    char pad_0050[1264]; //0x0050
+    float health; //0x0540
+    char pad_0544[4]; //0x0544
+    float armor; //0x0548
+    char pad_054C[172]; //0x054C
+    int32_t shotgunshoot; //0x05F8
+    char pad_05FC[596]; //0x05FC
 
+    virtual void Function0();
+    virtual void Function1();
+    virtual void Function2();
+    virtual void Function3();
+    virtual void Function4();
+    virtual void Function5();
+    virtual void Function6();
+    virtual void Function7();
+    virtual void Function8();
+    virtual void Function9();
+}; //Size: 0x0850
 
 
 struct playerpos {
@@ -53,6 +77,7 @@ namespace offsets {
 
 
 
+
 void cheatmenu() {
     AllocConsole();
     freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
@@ -65,10 +90,10 @@ void cheatmenu() {
     // Get base address of the game module
     const auto BaseModule = (DWORD)GetModuleHandle(L"gta_sa.exe");
     if (BaseModule == NULL) {
-        std::cerr << "Failed to get module handle." << std::endl;
+        cerr << "Failed to get module handle." << endl;
         return;
     }
-    std::cout << BaseModule << std::endl;
+    cout << BaseModule << endl;
 
     /*int32_t * money = (int32_t*)(offsets::money_offset);
     *money = 500000000;*/
@@ -78,6 +103,30 @@ void cheatmenu() {
     uintptr_t LocalPlayer = *(uintptr_t*)(BaseModule + offsets::localplayeroffset);
     float health = *(float*)(LocalPlayer + offsets::health_offset);
     std::cout << "Health: " << health << std::endl;
+    localplayerlist * localplayerobjlist = reinterpret_cast<localplayerlist*>(LocalPlayer);
+    localplayerobjlist->health = 50;
+
+    int32_t reloading = 2;
+    int32_t shooting = 1;
+    while (true) {
+        if (localplayerobjlist->shotgunshoot == shooting) {
+            cout << "Local player is shooting now with shotgun" << endl;
+
+        }
+        else if (localplayerobjlist->shotgunshoot == reloading) {
+            cout << "Local player is reloading now with shotgun" << endl;
+
+        }
+
+        else {
+            cout << "Local player is not shooting either reloading" << endl;
+
+        }
+
+
+
+    }
+
     FreeConsole();
 }
 
