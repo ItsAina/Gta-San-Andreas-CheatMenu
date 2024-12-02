@@ -6,7 +6,8 @@
 #include <list>
 #include <tchar.h> 
 #include <iostream>
-
+#include <thread>
+#include <chrono>
 using namespace std;
 
 
@@ -104,12 +105,19 @@ void cheatmenu() {
     float health = *(float*)(LocalPlayer + offsets::health_offset);
     std::cout << "Health: " << health << std::endl;
     localplayerlist * localplayerobjlist = reinterpret_cast<localplayerlist*>(LocalPlayer);
-    localplayerobjlist->health = 50;
-
-    int32_t reloading = 2;
-    int32_t shooting = 1;
+   /* int32_t reloading = 2;
+    int32_t shooting = 1;*/
     while (true) {
-        if (localplayerobjlist->shotgunshoot == shooting) {
+
+        if (GetAsyncKeyState(VK_SPACE)) {
+            localplayerobjlist->jump = 100;
+            this_thread::sleep_for(chrono::seconds(1));
+
+
+        }
+
+
+       /* if (localplayerobjlist->shotgunshoot == shooting) {
             cout << "Local player is shooting now with shotgun" << endl;
 
         }
@@ -121,7 +129,7 @@ void cheatmenu() {
         else {
             cout << "Local player is not shooting either reloading" << endl;
 
-        }
+        }*/
 
 
 
