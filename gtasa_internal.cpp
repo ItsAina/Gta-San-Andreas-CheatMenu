@@ -37,11 +37,7 @@ public:
 }; //Size: 0x0850
 
 
-struct playerpos {
-    float x, y, z;
 
-
-}PlayerPosition;
 
 namespace offsets {
     DWORD health_offset = 0x540;
@@ -76,9 +72,6 @@ namespace offsets {
 }
 
 
-
-
-
 void cheatmenu() {
     AllocConsole();
     freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
@@ -98,38 +91,107 @@ void cheatmenu() {
 
     /*int32_t * money = (int32_t*)(offsets::money_offset);
     *money = 500000000;*/
-        
+
     //std::cout << *money << std::endl;
 
-    uintptr_t LocalPlayer = *(uintptr_t*)(BaseModule + offsets::localplayeroffset);
-    float health = *(float*)(LocalPlayer + offsets::health_offset);
-    std::cout << "Health: " << health << std::endl;
-    localplayerlist * localplayerobjlist = reinterpret_cast<localplayerlist*>(LocalPlayer);
-   /* int32_t reloading = 2;
-    int32_t shooting = 1;*/
-    while (true) {
+    uintptr_t LocalPlayer = *reinterpret_cast<uintptr_t*>(BaseModule + offsets::localplayeroffset);
+    float health = *reinterpret_cast<float*>(LocalPlayer + offsets::health_offset);
+    uintptr_t playervecpos = *reinterpret_cast<float*>(LocalPlayer + 0x14);
+     
+    
+    localplayerlist* localplayerobjlist = reinterpret_cast<localplayerlist*>(LocalPlayer);
+    /* int32_t reloading = 2;
+     int32_t shooting = 1;*/
+    float x;
+    float y;
+    float z;
+    x = *reinterpret_cast<float*>(playervecpos + 0x30);
+    y = *reinterpret_cast<float*>(playervecpos + 0x34);
+    z = *reinterpret_cast<float*>(playervecpos + 0x38);
+    bool jumphack = false;
+    bool flyhack = false;
+    float jumpval;
 
-        if (GetAsyncKeyState(VK_SPACE)) {
-            localplayerobjlist->jump = 100;
+
+    while (true) {
+        localplayerobjlist->jump = 0;
+
+        if (GetAsyncKeyState('6')) {
+            jumphack != jumphack;
+
+            if (jumphack) {
+                cout << "Add value for jump value" << endl;
+                cin >> jumpval;
+            }
+
+
+        }
+
+        else if (GetAsyncKeyState('7')) {
+            flyhack != flyhack;
             this_thread::sleep_for(chrono::seconds(1));
 
-
         }
 
 
-       /* if (localplayerobjlist->shotgunshoot == shooting) {
-            cout << "Local player is shooting now with shotgun" << endl;
 
+
+        if (jumphack && not flyhack) {
+            if (GetAsyncKeyState(VK_SPACE)) {
+                localplayerobjlist->jump = jumpval;
+                this_thread::sleep_for(chrono::seconds(1));
+            }
         }
-        else if (localplayerobjlist->shotgunshoot == reloading) {
-            cout << "Local player is reloading now with shotgun" << endl;
 
+        if (not jumphack && flyhack) {
+            if (GetAsyncKeyState('w')) {
+                this_thread::sleep_for(chrono::seconds(1));
+            }
+            else if (GetAsyncKeyState('a')) {
+                //float xneg = 
+                localplayerobjlist->jump = jumpval;
+                this_thread::sleep_for(chrono::seconds(1));
+            }
+            else if (GetAsyncKeyState('s')) {
+                /*float yneg = */
+                localplayerobjlist->jump = jumpval;
+                this_thread::sleep_for(chrono::seconds(1));
+            }
+
+            else if (GetAsyncKeyState('d')) {
+                /*float ypos = */
+                localplayerobjlist->jump = jumpval;
+                this_thread::sleep_for(chrono::seconds(1));
+            }
+
+            else if (GetAsyncKeyState(VK_CONTROL)) {
+                float zneg = localplayerobjlist->jump = jumpval;
+                this_thread::sleep_for(chrono::seconds(1));
+            }
+
+            else if (GetAsyncKeyState(VK_SPACE)) {
+                /*float zpos =*/
+            localplayerobjlist->jump = jumpval;
+                this_thread::sleep_for(chrono::seconds(1));
+            }
         }
 
-        else {
-            cout << "Local player is not shooting either reloading" << endl;
 
-        }*/
+
+
+        /* if (localplayerobjlist->shotgunshoot == shooting) {
+             cout << "Local player is shooting now with shotgun" << endl;
+
+         }
+         else if (localplayerobjlist->shotgunshoot == reloading) {
+             cout << "Local player is reloading now with shotgun" << endl;
+
+         }
+
+         else {
+             cout << "Local player is not shooting either reloading" << endl;
+
+         }*/
 
 
 
@@ -139,16 +201,10 @@ void cheatmenu() {
 }
 
 
-
-
-
-
-
-
-BOOL APIENTRY DllMain( HMODULE hModule,
-                       DWORD  ul_reason_for_call,
-                       LPVOID lpReserved
-                     )
+BOOL APIENTRY DllMain(HMODULE hModule,
+    DWORD  ul_reason_for_call,
+    LPVOID lpReserved
+)
 {
     switch (ul_reason_for_call)
     {
@@ -162,4 +218,3 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     }
     return TRUE;
 }
-
